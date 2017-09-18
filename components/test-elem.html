@@ -1,0 +1,67 @@
+<template id="test-elem-template">
+    <style>
+        :host {
+            display: block;
+            background: #000;
+        }
+        :host h1 {
+            text-align: center;
+        }
+    </style>
+    <h1><slot></slot></h1>
+</template>
+<script>
+    class TestElement extends HTMLElement {
+        constructor() {
+            super();
+            let shadowRoot = this.attachShadow({mode: 'open'});
+            const template = document.currentScript.ownerDocument.getElementById('test-elem-template');
+            const content = template.content.cloneNode(true);
+            shadowRoot.appendChild(content);
+
+            this.colorList = ['blue', 'red', 'orange', 'purple'];
+            this.colorSelectedIdx = 0;
+            this.addEventListener('click', this.changeColor);
+        }
+
+        connectedCallback() {
+            var h1 = this.shadowRoot.querySelector('h1');
+            var color = this.color;
+            h1.style.color = color;
+            h1.textContent = color;
+            h1.style.background = this.background;
+        }
+
+        changeColor(e) {
+            if (this.colorSelectedIdx == this.colorSelectedIdx.length - 1)
+                this.colorSelectedIdx = 0;
+            else
+                this.colorSelectedIdx++;
+
+            this.color = this.colorList[this.colorSelectedIdx];
+
+            var h1 = this.shadowRoot.querySelector('h1');
+            var color = this.color;
+            h1.style.color = color;
+            h1.textContent = color;
+            h1.style.background = this.background;
+        }
+
+        get color() {
+            return this.getAttribute('color');
+        }
+
+        set color(newValue) {
+            this.setAttribute('color', newValue);
+        }
+
+        get background() {
+            return this.getAttribute('background');
+        }
+
+        set background(newValue) {
+            this.setAttribute('background', newValue);
+        }
+    }
+    window.customElements.define('test-elem', TestElement)
+</script>
