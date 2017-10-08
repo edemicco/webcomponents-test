@@ -12,6 +12,10 @@
 </template>
 <script>
     class TestElement extends HTMLElement {
+        static get observedAttributes() {
+            return ['color', 'background'];
+        }
+
         constructor() {
             super();
             let shadowRoot = this.attachShadow({mode: 'open'});
@@ -21,30 +25,33 @@
 
             this.colorList = ['blue', 'red', 'orange', 'purple'];
             this.colorSelectedIdx = 0;
-            this.addEventListener('click', this.changeColor);
+            this.addEventListener('click', this.clickHandler);
+            this.h1 = this.shadowRoot.querySelector('h1');
         }
 
         connectedCallback() {
-            var h1 = this.shadowRoot.querySelector('h1');
             var color = this.color;
-            h1.style.color = color;
-            h1.textContent = color;
-            h1.style.background = this.background;
+            this.h1.style.color = color;
+            this.h1.textContent = color;
+            this.h1.style.background = this.background;
         }
 
-        changeColor(e) {
-            if (this.colorSelectedIdx == this.colorSelectedIdx.length - 1)
+        attributeChangedCallback(attribute, oldVal, newVal) {
+            if (newVal !== oldVal) // Guard against infinite loop
+                this[attribute] = newVal;
+        }
+
+        clickHandler(e) {
+            if (this.colorSelectedIdx == this.colorList.length - 1)
                 this.colorSelectedIdx = 0;
             else
                 this.colorSelectedIdx++;
 
             this.color = this.colorList[this.colorSelectedIdx];
+            this.background = this.colorList[this.colorList.length - (this.colorSelectedIdx + 1)];
 
             var h1 = this.shadowRoot.querySelector('h1');
             var color = this.color;
-            h1.style.color = color;
-            h1.textContent = color;
-            h1.style.background = this.background;
         }
 
         get color() {
@@ -52,6 +59,8 @@
         }
 
         set color(newValue) {
+            this.h1.style.color = newValue;
+            this.h1.textContent = newValue;
             this.setAttribute('color', newValue);
         }
 
@@ -60,7 +69,9 @@
         }
 
         set background(newValue) {
+            this.h1.style.background = newValue;
             this.setAttribute('background', newValue);
+
         }
     }
     window.customElements.define('test-elem', TestElement)
